@@ -16,60 +16,52 @@ def scrape_contests(max_pages=3):
         res.encoding = "utf-8"
         soup = BeautifulSoup(res.text, "html.parser")
 
-        rows = soup.select("ul.list > li") or soup.select(".list-item") or soup.select("table tr")
-
-        # 실제 구조에 맞게 파싱
-        items = soup.find_all("li", class_=lambda c: c and "item" in c.lower())
+        items = soup.select("ul.list > li:not(.top)")
         if not items:
-            # 테이블 구조 시도
-            items = soup.select("table.list tr") or soup.select("tbody tr")
+            break
 
         for item in items:
             try:
                 # 제목 및 링크
-                title_tag = item.find("a")
+                title_tag = item.select_one("div.tit > a")
                 if not title_tag:
                     continue
+                # 배지 텍스트 제거 후 제목만 추출
+                for badge in title_tag.find_all("span"):
+                    badge.decompose()
                 title = title_tag.get_text(strip=True)
-                href = title_tag.get("href", "")
-                if href and not href.startswith("http"):
-                    href = BASE_URL + "/" + href.lstrip("?")
-                    href = title_tag.get("href", "")
-                    if href.startswith("?"):
-                        href = BASE_URL + "/" + href
 
-                # 마감일 (D-숫자 형태)
-                deadline = ""
-                d_tag = item.find(string=lambda t: t and "D-" in t)
-                if d_tag:
-                    deadline = d_tag.strip()
+                href = title_tag.get("href", "")
+                if href.startswith("?"):
+                    href = BASE_URL + "/" + href
 
                 # 주최기관
-                organizer = ""
-                tds = item.find_all("td")
-                if len(tds) >= 2:
-                    organizer = tds[1].get_text(strip=True)
+                organizer = item.select_one("div.organ")
+                organizer = organizer.get_text(strip=True) if organizer else ""
 
-                # 상태 (접수중 등)
-                status = ""
-                for keyword in ["접수중", "마감임박", "접수예정", "마감"]:
-                    if keyword in item.get_text():
-                        status = keyword
-                        break
+                # 마감일 (D-숫자 형태)
+                day_div = item.select_one("div.day")
+                deadline = ""
+                if day_div:
+                    # span 태그(상태) 제거하고 텍스트만
+                    status_span = day_div.find("span")
+                    status = status_span.get_text(strip=True) if status_span else ""
+                    if status_span:
+                        status_span.decompose()
+                    deadline = day_div.get_text(strip=True)
+                else:
+                    status = ""
 
-                if title and len(title) > 2:
+                if title:
                     contests.append({
                         "title": title,
-                        "url": href if href.startswith("http") else BASE_URL,
+                        "url": href,
                         "deadline": deadline,
                         "organizer": organizer,
                         "status": status,
                     })
             except Exception:
                 continue
-
-        if not items:
-            break
 
     return contests
 

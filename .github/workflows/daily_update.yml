@@ -1,0 +1,36 @@
+name: Daily Contest Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 매일 오전 9시 (KST = UTC+9)
+  workflow_dispatch:       # 수동 실행 버튼도 생김
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: 저장소 가져오기
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: pip install -r requirements.txt
+
+      - name: 스크래핑 실행
+        run: python main.py
+
+      - name: 결과 업로드 (GitHub Pages)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --staged --quiet || git commit -m "chore: daily update $(date +'%Y-%m-%d')"
+          git push

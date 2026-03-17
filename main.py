@@ -17,7 +17,7 @@ def fetch_poster(scraper, detail_url):
         pass
     return ""
 
-def scrape_contests(max_pages=2):
+def scrape_contests(max_pages=3):
     scraper = cloudscraper.create_scraper()
     contests = []
     for page in range(1, max_pages + 1):
@@ -125,6 +125,12 @@ def generate_html(contests):
         .deadline {{ color: #555; }}
         .status {{ font-weight: bold; }}
         .footer {{ text-align: center; margin-top: 30px; color: #aaa; font-size: 0.8rem; }}
+        .pagination {{ max-width: 1100px; margin: 24px auto 0; display: flex; justify-content: center; gap: 8px; }}
+        .pagination button {{ padding: 8px 18px; border: none; border-radius: 8px; background: #ddd; color: #555; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }}
+        .pagination button.active {{ background: #3498db; color: white; font-weight: bold; }}
+        .pagination button:hover:not(.active) {{ background: #c5d8e8; }}
+        .card {{ display: none; }}
+        .card.visible {{ display: flex; }}
     </style>
 </head>
 <body>
@@ -132,10 +138,38 @@ def generate_html(contests):
         <h1>💻 IT 공모전 목록 <span class="count">{count}건</span></h1>
         <p class="meta">📅 마지막 업데이트: {today} &nbsp;|&nbsp; 출처: <a href="https://www.wevity.com" target="_blank">위비티(wevity.com)</a></p>
     </div>
-    <div class="grid">
+    <div class="grid" id="grid">
         {cards if cards else '<p style="color:#aaa;text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</p>'}
     </div>
+    <div class="pagination" id="pagination"></div>
     <p class="footer">매일 자동으로 업데이트됩니다.</p>
+    <script>
+        const PER_PAGE = 30;
+        const cards = document.querySelectorAll('.card');
+        const total = cards.length;
+        const totalPages = Math.ceil(total / PER_PAGE);
+        let current = 1;
+
+        function showPage(page) {{
+            current = page;
+            cards.forEach((c, i) => {{
+                c.classList.toggle('visible', i >= (page-1)*PER_PAGE && i < page*PER_PAGE);
+            }});
+            document.querySelectorAll('.pagination button').forEach((btn, i) => {{
+                btn.classList.toggle('active', i+1 === page);
+            }});
+            window.scrollTo({{top: 0, behavior: 'smooth'}});
+        }}
+
+        const pagination = document.getElementById('pagination');
+        for (let p = 1; p <= totalPages; p++) {{
+            const btn = document.createElement('button');
+            btn.textContent = p + ' 페이지';
+            btn.onclick = () => showPage(p);
+            pagination.appendChild(btn);
+        }}
+        showPage(1);
+    </script>
 </body>
 </html>"""
     return html
@@ -149,4 +183,4 @@ if __name__ == "__main__":
     html = generate_html(contests)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
-    print("index.html 생성 완료")
+    print(f"index.html 생성 완료")

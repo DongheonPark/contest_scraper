@@ -25,14 +25,20 @@
         .deadline { color: #555; }
         .status { font-weight: bold; }
         .footer { text-align: center; margin-top: 30px; color: #aaa; font-size: 0.8rem; }
+        .pagination { max-width: 1100px; margin: 24px auto 0; display: flex; justify-content: center; gap: 8px; }
+        .pagination button { padding: 8px 18px; border: none; border-radius: 8px; background: #ddd; color: #555; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+        .pagination button.active { background: #3498db; color: white; font-weight: bold; }
+        .pagination button:hover:not(.active) { background: #c5d8e8; }
+        .card { display: none; }
+        .card.visible { display: flex; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>💻 IT 공모전 목록 <span class="count">30건</span></h1>
+        <h1>💻 IT 공모전 목록 <span class="count">40건</span></h1>
         <p class="meta">📅 마지막 업데이트: 2026년 03월 17일 &nbsp;|&nbsp; 출처: <a href="https://www.wevity.com" target="_blank">위비티(wevity.com)</a></p>
     </div>
-    <div class="grid">
+    <div class="grid" id="grid">
         
         <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=1&ix=105706" target="_blank" class="card">
             <div class="poster"><img src="https://www.wevity.com/upload/contest/20260313015647_c7ea9f54.jpg" alt="포스터"></div>
@@ -199,7 +205,7 @@
                 </div>
             </div>
         </a>
-        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=104153" target="_blank" class="card">
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=1&ix=104153" target="_blank" class="card">
             <div class="poster"><img src="https://www.wevity.com/upload/contest/20260102103603_66786d08.jpg" alt="포스터"></div>
             <div class="info">
                 <div class="title">[쥬비스다이어트] 2026 ADD 숏폼 공모전</div>
@@ -210,7 +216,7 @@
                 </div>
             </div>
         </a>
-        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=103705" target="_blank" class="card">
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=1&ix=103705" target="_blank" class="card">
             <div class="poster"><img src="https://www.wevity.com/upload/contest/20251128141425_4d593658.jpg" alt="포스터"></div>
             <div class="info">
                 <div class="title">2026 포스텍 SF 어워드 (SF 단편소설 공모전)</div>
@@ -221,7 +227,7 @@
                 </div>
             </div>
         </a>
-        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=103673" target="_blank" class="card">
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=1&ix=103673" target="_blank" class="card">
             <div class="poster"><img src="https://www.wevity.com/upload/contest/20251126105022_edbc7b0c.jpg" alt="포스터"></div>
             <div class="info">
                 <div class="title">을지로4가역 미디어아트 공모전</div>
@@ -232,7 +238,7 @@
                 </div>
             </div>
         </a>
-        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=103503" target="_blank" class="card">
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=1&ix=103503" target="_blank" class="card">
             <div class="poster"><img src="https://www.wevity.com/upload/contest/20251120000359_410788ba.jpg" alt="포스터"></div>
             <div class="info">
                 <div class="title">2025 충남 생성형 AI 디지털 아트 공모전</div>
@@ -243,7 +249,7 @@
                 </div>
             </div>
         </a>
-        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=103459" target="_blank" class="card">
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=1&ix=103459" target="_blank" class="card">
             <div class="poster"><img src="https://www.wevity.com/upload/contest/20251113002527_5163adb4.jpg" alt="포스터"></div>
             <div class="info">
                 <div class="title">[XYLO] KPOP 루키 바이럴 숏폼 챌린지</div>
@@ -364,7 +370,145 @@
                 </div>
             </div>
         </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102936" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251021233841_0a4816bb.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">2025 배재대학교 제3회 스마트ICT융합 메이커톤</div>
+                <div class="organizer">과학기술정보통신부, IITP 정보통신기획평가원</div>
+                <div class="bottom">
+                    <span class="deadline">D+128</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102934" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251027231849_c6eb30c8.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">2025 화성특례시 AI 공모전 - 제5회 별별화성 Awards : 화성왔성</div>
+                <div class="organizer">화성특례시</div>
+                <div class="bottom">
+                    <span class="deadline">D+121</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102698" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251022231203_eade0dd2.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">새싹 해커톤(SeSAC Hackathon)] 2025년 새싹(SeSAC) 해커톤  (내용변경)</div>
+                <div class="organizer">서울경제진흥원</div>
+                <div class="bottom">
+                    <span class="deadline">D+130</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102656" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251010153019_4024006e.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">JBL 대학생 캠퍼스 크루 1기 모집 (JBL Campus Crew)</div>
+                <div class="organizer">JBL</div>
+                <div class="bottom">
+                    <span class="deadline">D+151</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102619" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251011002050_334cb68b.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">2025 AI 해킹방어 대회</div>
+                <div class="organizer">한국인터넷진흥원</div>
+                <div class="bottom">
+                    <span class="deadline">D+148</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102610" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251010214747_fc7ac5bc.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">2025년 공공 AI 대전환 챌린지 공모전</div>
+                <div class="organizer">행정안전부, 한국지능정보사회진흥원</div>
+                <div class="bottom">
+                    <span class="deadline">D+149</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102608" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251010204800_a351d285.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">2025 스마트건설·안전·AI 엑스포 제2회 생성형 AI 공모전</div>
+                <div class="organizer">국토교통부</div>
+                <div class="bottom">
+                    <span class="deadline">D+146</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102577" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251004092012_caf5468e.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">글로벌 서울 아이디어 제안 숏폼 챌린지 (Seoul My Soul, Seoul My Hope)</div>
+                <div class="organizer">서울특별시</div>
+                <div class="bottom">
+                    <span class="deadline">D+134</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102540" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251002151111_46246ae7.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">2025년 지속가능한 남산 콘텐츠 공모전</div>
+                <div class="organizer">서울특별시</div>
+                <div class="bottom">
+                    <span class="deadline">D+123</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
+        <a href="https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gbn=view&gp=2&ix=102532" target="_blank" class="card">
+            <div class="poster"><img src="https://www.wevity.com/upload/contest/20251002145352_2f90e326.jpg" alt="포스터"></div>
+            <div class="info">
+                <div class="title">제2회 컴투스 글로벌 게임개발 공모전 컴:온 2025</div>
+                <div class="organizer">컴투스, 게임문화재단</div>
+                <div class="bottom">
+                    <span class="deadline">D+76</span>
+                    <span class="status" style="color:#999">마감</span>
+                </div>
+            </div>
+        </a>
     </div>
+    <div class="pagination" id="pagination"></div>
     <p class="footer">매일 자동으로 업데이트됩니다.</p>
+    <script>
+        const PER_PAGE = 30;
+        const cards = document.querySelectorAll('.card');
+        const total = cards.length;
+        const totalPages = Math.ceil(total / PER_PAGE);
+        let current = 1;
+
+        function showPage(page) {
+            current = page;
+            cards.forEach((c, i) => {
+                c.classList.toggle('visible', i >= (page-1)*PER_PAGE && i < page*PER_PAGE);
+            });
+            document.querySelectorAll('.pagination button').forEach((btn, i) => {
+                btn.classList.toggle('active', i+1 === page);
+            });
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        const pagination = document.getElementById('pagination');
+        for (let p = 1; p <= totalPages; p++) {
+            const btn = document.createElement('button');
+            btn.textContent = p + ' 페이지';
+            btn.onclick = () => showPage(p);
+            pagination.appendChild(btn);
+        }
+        showPage(1);
+    </script>
 </body>
 </html>

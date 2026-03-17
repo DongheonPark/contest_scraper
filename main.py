@@ -71,7 +71,7 @@ def scrape_contests(max_pages=3):
 
 
 def generate_html(contests):
-    today = datetime.now().strftime("%Y년 %m월 %d일")
+    today = datetime.now().strftime("%Y년 %m월 %d일 %H:%M")
     count = len(contests)
 
     cards = ""

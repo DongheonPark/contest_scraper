@@ -83,6 +83,8 @@ def scrape_contests(max_pages=3):
             except Exception:
                 continue
 
+    order = {"마감임박": 0, "접수중": 1, "접수예정": 2, "마감": 3}
+    contests.sort(key=lambda c: order.get(c["status"], 9))
     return contests
 
 

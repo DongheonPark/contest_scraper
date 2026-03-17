@@ -25,10 +25,11 @@
         .deadline { color: #555; }
         .status { font-weight: bold; }
         .footer { text-align: center; margin-top: 30px; color: #aaa; font-size: 0.8rem; }
-        .pagination { max-width: 1100px; margin: 24px auto 0; display: flex; justify-content: center; gap: 8px; }
-        .pagination button { padding: 8px 18px; border: none; border-radius: 8px; background: #ddd; color: #555; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
-        .pagination button.active { background: #3498db; color: white; font-weight: bold; }
-        .pagination button:hover:not(.active) { background: #c5d8e8; }
+        .pagination { max-width: 1100px; margin: 24px auto 0; display: flex; justify-content: center; align-items: center; gap: 12px; }
+        .pagination button { padding: 8px 16px; border: none; border-radius: 8px; background: #ddd; color: #555; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; }
+        .pagination button:hover:not(:disabled) { background: #c5d8e8; }
+        .pagination button:disabled { opacity: 0.3; cursor: default; }
+        .pagination .page-info { font-size: 0.9rem; color: #555; min-width: 80px; text-align: center; }
         .card { display: none; }
         .card.visible { display: flex; }
     </style>
@@ -490,24 +491,28 @@
         const totalPages = Math.ceil(total / PER_PAGE);
         let current = 1;
 
+        const pagination = document.getElementById('pagination');
+        const prevBtn = document.createElement('button');
+        const nextBtn = document.createElement('button');
+        const pageInfo = document.createElement('span');
+        prevBtn.textContent = '◀';
+        nextBtn.textContent = '▶';
+        pageInfo.className = 'page-info';
+        pagination.append(prevBtn, pageInfo, nextBtn);
+
         function showPage(page) {
             current = page;
             cards.forEach((c, i) => {
                 c.classList.toggle('visible', i >= (page-1)*PER_PAGE && i < page*PER_PAGE);
             });
-            document.querySelectorAll('.pagination button').forEach((btn, i) => {
-                btn.classList.toggle('active', i+1 === page);
-            });
+            pageInfo.textContent = `${page} / ${totalPages}`;
+            prevBtn.disabled = page === 1;
+            nextBtn.disabled = page === totalPages;
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        const pagination = document.getElementById('pagination');
-        for (let p = 1; p <= totalPages; p++) {
-            const btn = document.createElement('button');
-            btn.textContent = p + ' 페이지';
-            btn.onclick = () => showPage(p);
-            pagination.appendChild(btn);
-        }
+        prevBtn.onclick = () => showPage(current - 1);
+        nextBtn.onclick = () => showPage(current + 1);
         showPage(1);
     </script>
 </body>

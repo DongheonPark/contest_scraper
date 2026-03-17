@@ -1,32 +1,33 @@
-import requests
+import cloudscraper
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 BASE_URL = "https://www.wevity.com"
 IT_URL = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-}
 
 def scrape_contests(max_pages=3):
+    scraper = cloudscraper.create_scraper()
     contests = []
     for page in range(1, max_pages + 1):
         url = f"{IT_URL}&gp={page}"
-        res = requests.get(url, headers=HEADERS, timeout=10)
+        res = scraper.get(url, timeout=15)
         res.encoding = "utf-8"
         soup = BeautifulSoup(res.text, "html.parser")
 
-        items = soup.select("ul.list > li:not(.top)")
-        if not items:
+        rows = soup.select("table.list-table tbody tr")
+        if not rows:
             break
 
-        for item in items:
+        for row in rows:
             try:
+                tds = row.find_all("td")
+                if len(tds) < 3:
+                    continue
+
                 # 제목 및 링크
-                title_tag = item.select_one("div.tit > a")
+                title_tag = row.select_one("td a")
                 if not title_tag:
                     continue
-                # 배지 텍스트 제거 후 제목만 추출
                 for badge in title_tag.find_all("span"):
                     badge.decompose()
                 title = title_tag.get_text(strip=True)
@@ -35,22 +36,15 @@ def scrape_contests(max_pages=3):
                 if href.startswith("?"):
                     href = BASE_URL + "/" + href
 
-                # 주최기관
-                organizer = item.select_one("div.organ")
-                organizer = organizer.get_text(strip=True) if organizer else ""
+                # 주최기관 (두 번째 td)
+                organizer = tds[1].get_text(strip=True) if len(tds) > 1 else ""
 
-                # 마감일 (D-숫자 형태)
-                day_div = item.select_one("div.day")
-                deadline = ""
-                if day_div:
-                    # span 태그(상태) 제거하고 텍스트만
-                    status_span = day_div.find("span")
-                    status = status_span.get_text(strip=True) if status_span else ""
-                    if status_span:
-                        status_span.decompose()
-                    deadline = day_div.get_text(strip=True)
-                else:
-                    status = ""
+                # 마감일/상태 (마지막 td)
+                deadline_td = tds[-1].get_text(strip=True)
+                # "D-7 마감임박" 형태에서 분리
+                parts = deadline_td.split()
+                deadline = parts[0] if parts else ""
+                status = parts[1] if len(parts) > 1 else ""
 
                 if title:
                     contests.append({

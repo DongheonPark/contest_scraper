@@ -1,6 +1,6 @@
 import cloudscraper
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 BASE_URL = "https://www.wevity.com"
 IT_URL = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20"
@@ -71,7 +71,8 @@ def scrape_contests(max_pages=3):
 
 
 def generate_html(contests):
-    today = datetime.now().strftime("%Y년 %m월 %d일 %H:%M")
+    kst = timezone(timedelta(hours=9))
+    today = datetime.now(kst).strftime("%Y년 %m월 %d일 %H:%M (KST)")
     count = len(contests)
 
     cards = ""

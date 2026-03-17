@@ -14,18 +14,13 @@ def scrape_contests(max_pages=3):
         res.encoding = "utf-8"
         soup = BeautifulSoup(res.text, "html.parser")
 
-        rows = soup.select("table.list-table tbody tr")
-        if not rows:
+        items = soup.select("ul.list > li:not(.top)")
+        if not items:
             break
 
-        for row in rows:
+        for item in items:
             try:
-                tds = row.find_all("td")
-                if len(tds) < 3:
-                    continue
-
-                # 제목 및 링크
-                title_tag = row.select_one("td a")
+                title_tag = item.select_one("div.tit > a")
                 if not title_tag:
                     continue
                 for badge in title_tag.find_all("span"):
@@ -36,15 +31,15 @@ def scrape_contests(max_pages=3):
                 if href.startswith("?"):
                     href = BASE_URL + "/" + href
 
-                # 주최기관 (두 번째 td)
-                organizer = tds[1].get_text(strip=True) if len(tds) > 1 else ""
+                organizer = item.select_one("div.organ")
+                organizer = organizer.get_text(strip=True) if organizer else ""
 
-                # 마감일/상태 (마지막 td)
-                deadline_td = tds[-1].get_text(strip=True)
-                # "D-7 마감임박" 형태에서 분리
-                parts = deadline_td.split()
-                deadline = parts[0] if parts else ""
-                status = parts[1] if len(parts) > 1 else ""
+                day_div = item.select_one("div.day")
+                status_span = day_div.select_one("span.dday") if day_div else None
+                status = status_span.get_text(strip=True) if status_span else ""
+                if status_span:
+                    status_span.decompose()
+                deadline = day_div.get_text(strip=True) if day_div else ""
 
                 if title:
                     contests.append({

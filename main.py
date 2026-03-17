@@ -1,9 +1,11 @@
+import re
 import cloudscraper
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone, timedelta
 
 BASE_URL = "https://www.wevity.com"
 IT_URL = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20"
+EXPIRE_DAYS = 30  # 마감 후 N일 지나면 목록에서 제거
 
 def fetch_poster(scraper, detail_url):
     try:
@@ -16,6 +18,15 @@ def fetch_poster(scraper, detail_url):
     except Exception:
         pass
     return ""
+
+def parse_dday(text):
+    """D-20 → -20 (남은 일수), D+3 → 3 (마감 후 경과일)"""
+    text = text.strip()
+    m = re.search(r'D[+\-](\d+)', text)
+    if not m:
+        return None
+    days = int(m.group(1))
+    return days if '+' in text else -days
 
 def scrape_contests(max_pages=3):
     scraper = cloudscraper.create_scraper()
@@ -53,6 +64,11 @@ def scrape_contests(max_pages=3):
                     status_span.decompose()
                 deadline = day_div.get_text(strip=True) if day_div else ""
 
+                # 마감 후 EXPIRE_DAYS일 초과 시 제외
+                dday = parse_dday(deadline)
+                if dday is not None and dday > EXPIRE_DAYS:
+                    continue
+
                 poster = fetch_poster(scraper, href)
 
                 if title:
@@ -87,7 +103,7 @@ def generate_html(contests):
         poster_html = f'<img src="{c["poster"]}" alt="포스터">' if c["poster"] else '<div class="no-img">이미지 없음</div>'
 
         cards += f"""
-        <a href="{c['url']}" target="_blank" class="card">
+        <a href="{c['url']}" target="_blank" class="card" data-status="{c['status']}">
             <div class="poster">{poster_html}</div>
             <div class="info">
                 <div class="title">{c['title']}</div>
@@ -108,13 +124,18 @@ def generate_html(contests):
     <style>
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
         body {{ font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; padding: 24px; }}
-        .header {{ max-width: 1100px; margin: 0 auto 20px; }}
+        .header {{ max-width: 1100px; margin: 0 auto 16px; }}
         h1 {{ font-size: 1.6rem; color: #2c3e50; margin-bottom: 6px; }}
         .count {{ background: #3498db; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem; margin-left: 8px; }}
-        .meta {{ color: #888; font-size: 0.9rem; }}
+        .meta {{ color: #888; font-size: 0.9rem; margin-bottom: 12px; }}
         .meta a {{ color: #3498db; text-decoration: none; }}
+        .filter-bar {{ max-width: 1100px; margin: 0 auto 16px; display: flex; align-items: center; gap: 10px; }}
+        .filter-bar label {{ font-size: 0.9rem; color: #555; }}
+        .filter-bar select {{ padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 0.9rem; cursor: pointer; }}
+        .filter-count {{ font-size: 0.85rem; color: #888; }}
         .grid {{ max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }}
-        .card {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }}
+        .card {{ background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; flex-direction: column; display: none; }}
+        .card.visible {{ display: flex; }}
         .card:hover {{ transform: translateY(-4px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }}
         .poster {{ width: 100%; aspect-ratio: 3/4; overflow: hidden; background: #eee; }}
         .poster img {{ width: 100%; height: 100%; object-fit: cover; }}
@@ -131,14 +152,23 @@ def generate_html(contests):
         .pagination button:hover:not(:disabled) {{ background: #c5d8e8; }}
         .pagination button:disabled {{ opacity: 0.3; cursor: default; }}
         .pagination .page-info {{ font-size: 0.9rem; color: #555; min-width: 80px; text-align: center; }}
-        .card {{ display: none; }}
-        .card.visible {{ display: flex; }}
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>💻 IT 공모전 목록 <span class="count">{count}건</span></h1>
+        <h1>💻 IT 공모전 목록 <span class="count" id="totalCount">{count}건</span></h1>
         <p class="meta">📅 마지막 업데이트: {today} &nbsp;|&nbsp; 출처: <a href="https://www.wevity.com" target="_blank">위비티(wevity.com)</a></p>
+    </div>
+    <div class="filter-bar">
+        <label for="statusFilter">상태</label>
+        <select id="statusFilter" onchange="applyFilter()">
+            <option value="all">전체</option>
+            <option value="접수중">접수중</option>
+            <option value="마감임박">마감임박</option>
+            <option value="접수예정">접수예정</option>
+            <option value="마감">마감</option>
+        </select>
+        <span class="filter-count" id="filterCount"></span>
     </div>
     <div class="grid" id="grid">
         {cards if cards else '<p style="color:#aaa;text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</p>'}
@@ -147,9 +177,8 @@ def generate_html(contests):
     <p class="footer">매일 자동으로 업데이트됩니다.</p>
     <script>
         const PER_PAGE = 30;
-        const cards = document.querySelectorAll('.card');
-        const total = cards.length;
-        const totalPages = Math.ceil(total / PER_PAGE);
+        const allCards = Array.from(document.querySelectorAll('.card'));
+        let filteredCards = [...allCards];
         let current = 1;
 
         const pagination = document.getElementById('pagination');
@@ -161,20 +190,31 @@ def generate_html(contests):
         pageInfo.className = 'page-info';
         pagination.append(prevBtn, pageInfo, nextBtn);
 
-        function showPage(page) {{
-            current = page;
-            cards.forEach((c, i) => {{
-                c.classList.toggle('visible', i >= (page-1)*PER_PAGE && i < page*PER_PAGE);
-            }});
-            pageInfo.textContent = `${{page}} / ${{totalPages}}`;
-            prevBtn.disabled = page === 1;
-            nextBtn.disabled = page === totalPages;
+        function applyFilter() {{
+            const filter = document.getElementById('statusFilter').value;
+            filteredCards = filter === 'all'
+                ? [...allCards]
+                : allCards.filter(c => c.dataset.status === filter);
+            current = 1;
+            document.getElementById('totalCount').textContent = filteredCards.length + '건';
+            const filterCount = document.getElementById('filterCount');
+            filterCount.textContent = filter === 'all' ? '' : `(전체 ${{allCards.length}}건 중 ${{filteredCards.length}}건)`;
+            render();
+        }}
+
+        function render() {{
+            const totalPages = Math.max(1, Math.ceil(filteredCards.length / PER_PAGE));
+            allCards.forEach(c => c.classList.remove('visible'));
+            filteredCards.slice((current - 1) * PER_PAGE, current * PER_PAGE).forEach(c => c.classList.add('visible'));
+            pageInfo.textContent = current + ' / ' + totalPages;
+            prevBtn.disabled = current === 1;
+            nextBtn.disabled = current === totalPages;
             window.scrollTo({{top: 0, behavior: 'smooth'}});
         }}
 
-        prevBtn.onclick = () => showPage(current - 1);
-        nextBtn.onclick = () => showPage(current + 1);
-        showPage(1);
+        prevBtn.onclick = () => {{ current--; render(); }};
+        nextBtn.onclick = () => {{ current++; render(); }};
+        render();
     </script>
 </body>
 </html>"""
@@ -183,10 +223,10 @@ def generate_html(contests):
 
 if __name__ == "__main__":
     print("공모전 정보 수집 중...")
-    contests = scrape_contests(max_pages=2)
+    contests = scrape_contests(max_pages=3)
     print(f"{len(contests)}개 공모전 수집 완료")
 
     html = generate_html(contests)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"index.html 생성 완료")
+    print("index.html 생성 완료")
